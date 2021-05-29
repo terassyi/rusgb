@@ -1,4 +1,6 @@
-mod utils;
+mod util;
+mod error;
+mod cpu;
 
 use wasm_bindgen::prelude::*;
 

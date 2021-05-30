@@ -1,6 +1,8 @@
 mod util;
 mod error;
 mod cpu;
+mod mem;
+mod cartridge;
 
 use wasm_bindgen::prelude::*;
 

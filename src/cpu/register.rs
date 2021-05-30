@@ -1,5 +1,20 @@
-// use crate::error::*;
+use crate::error::*;
 use crate::util;
+
+
+pub const REG_B: usize = 0;
+pub const REG_C: usize = 1;
+pub const REG_D: usize = 2;
+pub const REG_E: usize = 3;
+pub const REG_H: usize = 4;
+pub const REG_L: usize = 5;
+pub const REG_HL_R8: usize = 6;
+pub const REG_A: usize = 7;
+
+pub const REG_BC: usize = 0;
+pub const REG_DE: usize = 1;
+pub const REG_HL: usize = 2;
+pub const REG_SP: usize = 3;
 
 #[derive(Debug)]
 pub struct Register {
@@ -16,6 +31,21 @@ pub struct Register {
 }
 
 impl Register {
+    pub fn new() -> Register {
+        Register {
+            a: 0u8,
+            f: 0u8,
+            b: 0u8,
+            c: 0u8,
+            d: 0u8,
+            e: 0u8,
+            h: 0u8,
+            l: 0u8,
+            sp: 0u16,
+            pc: 0u16
+        }
+    }
+
     pub fn a(&self) -> u8 {
         self.a
     }
@@ -134,5 +164,37 @@ impl Register {
     
     pub fn set_pc(&mut self, val: u16) {
         self.pc = val
+    }
+
+    pub fn get_r8(&self, index: usize) -> GBResult<u8> {
+        match index {
+            REG_B => Ok(self.b()),
+            REG_C => Ok(self.c()),
+            REG_D => Ok(self.d()),
+            REG_E => Ok(self.e()),
+            REG_H => Ok(self.h()),
+            REG_L => Ok(self.l()),
+            REG_A => Ok(self.a()),
+            REG_HL_R8 => Ok(0u8), // read from memory addressed by HL
+            _ => Err(GBError::InvalidInput),
+        }
+    }
+
+    pub fn get_r16(&self, index: usize) -> GBResult<u16> {
+        match index {
+            REG_BC => Ok(self.bc()),
+            REG_DE => Ok(self.de()),
+            REG_HL => Ok(self.hl()),
+            REG_SP => Ok(self.sp()),
+            _ => Err(GBError::InvalidInput),
+        }
+    }
+
+    pub fn set_r8(&mut self, index: usize, val: u8) -> GBResult<()> {
+        match index {
+            REG_B => self.set_b(val),
+            _ => return Err(GBError::InvalidInput),
+        }
+        Ok(())
     }
 }

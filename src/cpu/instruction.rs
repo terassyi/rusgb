@@ -1,4 +1,8 @@
 use crate::error::*;
+use super::register::Register;
+use super::bus::Bus;
+
+pub type InstructionFn = fn(inst: u8, reg: &mut Register, bus: &mut Bus) -> GBResult<()>;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Instruction {
@@ -147,8 +151,6 @@ impl Instruction {
             // push/pop
             0xc1 | 0xd1 | 0xe1 | 0xf1 => Ok(Instruction::POP_RR),
             0xc5 | 0xd5 | 0xe5 | 0xf5 => Ok(Instruction::PUSH_RR),
-
-
             // arithmethic
             0x09 | 0x19 | 0x29 | 0x39 => Ok(Instruction::ADD_HL_RR),
             0x03 | 0x13 | 0x23 | 0x33 => Ok(Instruction::INC_RR),
@@ -213,14 +215,154 @@ impl Instruction {
             0x2f => Ok(Instruction::CPL),
             0x37 => Ok(Instruction::SCF),
             0x3f => Ok(Instruction::CCF),
-            _ => Err(GBError::InstructionNotFound),
+            _ => Err(GBError::InstructionNotFound(inst)),
         }
     }
+
+    pub fn function(&self) -> GBResult<InstructionFn> {
+        match self {
+            // 8bit load 
+            Instruction::LD_R_R => Ok(dummy), // xx
+            Instruction::LD_R_N => Ok(dummy), // xx nn
+            Instruction::LD_R_HL => Ok(dummy), // xx
+            Instruction::LD_HL_R => Ok(dummy), // 7x
+            Instruction::LD_HL_N => Ok(dummy), // 36 nn
+            Instruction::LD_A_BC => Ok(dummy), // 0x0a
+            Instruction::LD_A_DE => Ok(dummy), //0x1a
+            Instruction::LD_A_NN => Ok(dummy), // 0xfa
+            Instruction::LD_BC_A => Ok(dummy), // 0x02
+            Instruction::LD_DE_A => Ok(dummy), // 0x12
+            Instruction::LD_NN_A => Ok(dummy), // 0xea
+            Instruction::LD_A_IO_N => Ok(dummy), // 0xf0 nn
+            Instruction::LD_IO_N_A => Ok(dummy), // 0xe0 nn
+            Instruction::LD_A_IO_C => Ok(dummy), // 0xf2
+            Instruction::LD_IO_C_A => Ok(dummy), // 0xe2
+            Instruction::LDI_HL_A => Ok(dummy), // 0x22
+            Instruction::LDI_A_HL => Ok(dummy), // 0x2a
+            Instruction::LDD_HL_A => Ok(dummy), // 0x32
+            Instruction::LDD_A_HL => Ok(dummy), //0x3a
+            // 16bit load
+            Instruction::LD_RR_NN => Ok(dummy), // 0xx1 nn nn
+            Instruction::LD_SP_HL => Ok(dummy), // 0xf9
+            Instruction::LD_NN_SP => Ok(dummy), // 0x08
+            Instruction::PUSH_RR => Ok(dummy), // 0xx5
+            Instruction::POP_RR => Ok(dummy), // 0xx1
+            // 8bit arithmethic/logic
+            Instruction::ADD_A_R => Ok(dummy), // 0x8x
+            Instruction::ADD_A_N => Ok(dummy), // 0xc6 nn
+            Instruction::ADD_A_HL => Ok(dummy), // 0x86
+            Instruction::ADC_A_R => Ok(dummy), // 0x8x
+            Instruction::ADC_A_N => Ok(dummy), // 0xce nn
+            Instruction::ADC_A_HL => Ok(dummy), // 0x8e
+            Instruction::SUB_R => Ok(dummy), // 0x9x
+            Instruction::SUB_N => Ok(dummy), // 0xd6 nn
+            Instruction::SUB_HL => Ok(dummy), // 0x96
+            Instruction::SBC_A_R => Ok(dummy), // 0x9x
+            Instruction::SBC_A_N => Ok(dummy), // 0xde nn
+            Instruction::SBC_A_HL => Ok(dummy), // 0x9e
+            Instruction::AND_R => Ok(dummy), // 0xax
+            Instruction::AND_N => Ok(dummy), // 0xe6 nn
+            Instruction::AND_HL => Ok(dummy), // 0xax
+            Instruction::XOR_R => Ok(dummy), // 0xax
+            Instruction::XOR_N => Ok(dummy), // 0xee nn
+            Instruction::XOR_HL => Ok(dummy), // 0xae
+            Instruction::OR_R => Ok(dummy), // 0xbx
+            Instruction::OR_N => Ok(dummy), // 0xf6 nn
+            Instruction::OR_HL => Ok(dummy), // 0xb6
+            Instruction::CP_R => Ok(dummy), // 0xbx
+            Instruction::CP_N => Ok(dummy), // 0xfe nn
+            Instruction::CP_HL => Ok(dummy), // 0xbe
+            Instruction::INC_R => Ok(dummy), // 0xxx
+            Instruction::INC_HL => Ok(dummy), // 0x34
+            Instruction::DEC_R => Ok(dummy), // 0xxx
+            Instruction::DEC_HL => Ok(dummy), // 0x35
+            Instruction::DAA => Ok(dummy), // 0x27
+            Instruction::CPL => Ok(dummy), // 0x2f
+            // 16bit arithmethic/logic
+            Instruction::ADD_HL_RR => Ok(dummy), // 0xx9
+            Instruction::INC_RR => Ok(dummy), // 0xx3
+            Instruction::DEC_RR => Ok(dummy), // 0xxb
+            Instruction::ADD_SP_DD => Ok(dummy), // 0xe8
+            Instruction::LD_HL_SP_DD => Ok(dummy), // 0xf8
+            Instruction::RLCA => Ok(dummy), // 0x07
+            Instruction::RLA => Ok(dummy), // 0x17
+            Instruction::RRCA => Ok(dummy), // 0x0f
+            Instruction::RRA => Ok(dummy), // 0x1f
+            Instruction::RLC_R => Ok(dummy), // 0xcb 0x
+            Instruction::RLC_HL => Ok(dummy), // 0xcb 06
+            Instruction::RL_R => Ok(dummy), // cb 1x
+            Instruction::RL_HL => Ok(dummy), // cb 16
+            Instruction::RRC_R => Ok(dummy), // cb 0x
+            Instruction::RRC_HL => Ok(dummy), // cb 0e
+            Instruction::RR_R => Ok(dummy), // cb 1x
+            Instruction::RR_HL => Ok(dummy), // cb 1e
+            Instruction::SLA_R => Ok(dummy), // cb 2x
+            Instruction::SLA_HL => Ok(dummy), // cb 26
+            Instruction::SWAP_R => Ok(dummy), // cb 3x
+            Instruction::SWAP_HL => Ok(dummy), // cb 36
+            Instruction::SRA_R => Ok(dummy), // cb 2x
+            Instruction::SRA_HL => Ok(dummy), // cb 2e
+            Instruction::SRL_R => Ok(dummy), // cb 3x
+            Instruction::SRL_HL => Ok(dummy), // cb 3e
+            // single bit operation
+            Instruction::BIT_N_R => Ok(dummy), // cb xx
+            Instruction::BIT_N_HL => Ok(dummy), // cb xx
+            Instruction::SET_R => Ok(dummy), // cb xx
+            Instruction::SET_HL => Ok(dummy), // cb xx
+            Instruction::RES_R => Ok(dummy), // cb xx
+            Instruction::RES_HL => Ok(dummy), // cb xx
+            // cpu control
+            Instruction::CCF => Ok(dummy), // 3f
+            Instruction::SCF => Ok(dummy), // 37
+            Instruction::NOP => Ok(dummy), // 0x00
+            Instruction::HALT => Ok(dummy), // 76
+            Instruction::STOP => Ok(dummy), // 10 00
+            Instruction::DI => Ok(dummy), // f3
+            Instruction::EI => Ok(dummy), // fb
+            // jump
+            Instruction::JP_NN => Ok(dummy), // c3 nn nn
+            Instruction::JP_HL => Ok(dummy), // e9
+            Instruction::JP_F_NN => Ok(dummy), // xx nn nn
+            Instruction::JR_PC_DD => Ok(dummy), // 18 dd
+            Instruction::JR_F_PC_DD => Ok(dummy), // xx dd
+            Instruction::CALL_NN => Ok(dummy), // cd nn nn
+            Instruction::CALL_F_NN => Ok(dummy), // xx nn nn
+            Instruction::RET => Ok(dummy), // c9
+            Instruction::RET_F => Ok(dummy), // xx
+            Instruction::RETI => Ok(dummy), // d9
+            Instruction::RST => Ok(dummy), // xx
+            Instruction::PREFIX => Ok(dummy), // cb
+        }
+    }
+}
+
+fn op1(inst: u8) -> usize {
+    (inst & 0b0000_0111) as usize
+}
+
+fn op2(inst: u8) -> usize {
+    (inst & 0b0011_1000) as usize
+}
+
+
+pub fn dummy(inst: u8, reg: &mut Register, bus: &mut Bus) -> GBResult<()> {
+    Ok(())
+}
+
+pub fn ld_r_r(inst: u8, reg: &mut Register, bus: &mut Bus) -> GBResult<()> {
+    let reg1 = op1(inst);
+    let reg2 = op2(inst);
+    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::Instruction;
+    use crate::cpu::register::Register;
+    use crate::cpu::bus::Bus;
+    use crate::mem::ram::Ram;
+    use crate::mem::rom::Rom;
+    use crate::cartridge::Cartridge;
     #[test]
     fn test_instruction_from() {
         assert_eq!(Instruction::from(0x20).unwrap(), Instruction::JR_F_PC_DD);
@@ -253,5 +395,19 @@ mod tests {
         assert_eq!(Instruction::from(0xfa).unwrap(), Instruction::LD_A_NN);
         assert_eq!(Instruction::from(0x01).unwrap(), Instruction::LD_RR_NN);
         assert_eq!(Instruction::from(0x08).unwrap(), Instruction::LD_NN_SP);
+    }
+    #[test]
+    fn test_instruction_function() {
+        let mut reg = Register::new();
+        let mut ram = Ram::new(Vec::new());
+        let mut hram = Ram::new(Vec::new());
+        let cart_rom = Rom::new(Vec::new());
+        let mut cart_ram = Ram::new(Vec::new());
+        let mut cart = Cartridge::new(&cart_rom, &mut cart_ram, false, false);
+        let mut bus = Bus::new(&mut ram, &mut hram, &mut cart);
+        let inst = Instruction::NOP;
+        let func = inst.function().unwrap();
+        let res = func(0u8, &mut reg, &mut bus).is_ok();
+        assert_eq!(true, true)
     }
 }

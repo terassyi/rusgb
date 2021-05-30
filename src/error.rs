@@ -6,7 +6,7 @@ pub enum GBError {
     InvalidInput,
     NotFound,
     // cpu
-    InstructionNotFound,
+    InstructionNotFound(u8),
 }
 
 impl std::error::Error for GBError {}
@@ -18,7 +18,7 @@ impl fmt::Display for GBError {
             InvalidData => write!(f, "Invalid Data."),
             InvalidInput => write!(f, "Invalid Input."),
             NotFound => write!(f, "Not Found."),
-            InstructionNotFound => write!(f, "Instruction not found."),
+            InstructionNotFound(inst) => write!(f, "Instruction not found({}).", inst),
         }
     }
 }

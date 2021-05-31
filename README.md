@@ -18,3 +18,7 @@ $ make run
 ```shell
 $ make run # in container
 ```
+
+## Reference
+- [gameboy specification](http://bgb.bircd.org/pandocs.htm)
+- [gameboy specification ja(wip)](https://docs.google.com/presentation/d/1cSbWSyLM1kEqj0aTy-NbUM8g37-1DzKI5yfixOB92-0/edit?usp=sharing)

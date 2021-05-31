@@ -2,7 +2,8 @@ use crate::error::*;
 use super::register::Register;
 use super::bus::Bus;
 
-pub type InstructionFn = fn(inst: u8, reg: &mut Register, bus: &mut Bus) -> GBResult<()>;
+// instruction operation fn(instruction opcode, register, bus) -> consumed clock cycle
+pub type InstructionFn = fn(inst: u8, reg: &mut Register, bus: &mut Bus) -> GBResult<usize>;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Instruction {
@@ -345,14 +346,14 @@ fn op2(inst: u8) -> usize {
 }
 
 
-pub fn dummy(inst: u8, reg: &mut Register, bus: &mut Bus) -> GBResult<()> {
-    Ok(())
+pub fn dummy(inst: u8, reg: &mut Register, bus: &mut Bus) -> GBResult<usize> {
+    Ok(0usize)
 }
 
-pub fn ld_r_r(inst: u8, reg: &mut Register, bus: &mut Bus) -> GBResult<()> {
+pub fn ld_r_r(inst: u8, reg: &mut Register, bus: &mut Bus) -> GBResult<usize> {
     let reg1 = op1(inst);
     let reg2 = op2(inst);
-    Ok(())
+    Ok(0usize)
 }
 
 #[cfg(test)]
@@ -363,6 +364,7 @@ mod tests {
     use crate::mem::ram::Ram;
     use crate::mem::rom::Rom;
     use crate::cartridge::Cartridge;
+    use crate::timer::Timer;
     #[test]
     fn test_instruction_from() {
         assert_eq!(Instruction::from(0x20).unwrap(), Instruction::JR_F_PC_DD);
@@ -404,7 +406,8 @@ mod tests {
         let cart_rom = Rom::new(Vec::new());
         let mut cart_ram = Ram::new(Vec::new());
         let mut cart = Cartridge::new(&cart_rom, &mut cart_ram, false, false);
-        let mut bus = Bus::new(&mut ram, &mut hram, &mut cart);
+        let mut timer = Timer::new();
+        let mut bus = Bus::new(&mut ram, &mut hram, &mut cart, &mut timer);
         let inst = Instruction::NOP;
         let func = inst.function().unwrap();
         let res = func(0u8, &mut reg, &mut bus).is_ok();

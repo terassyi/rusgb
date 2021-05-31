@@ -3,6 +3,7 @@ mod error;
 mod cpu;
 mod mem;
 mod cartridge;
+mod timer;
 
 use wasm_bindgen::prelude::*;
 
